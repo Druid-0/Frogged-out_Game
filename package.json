@@ -1,0 +1,32 @@
+{
+  "name": "frog-arena-25d",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Frog Arena 2.5D — Golf Box (Three.js + WebSocket Gateway)",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "lint": "tsc --noEmit",
+    "start": "tsx server/src/index.ts"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.175.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.175.0",
+    "@types/ws": "^8.5.13",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.1.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.2.0"
+  }
+}

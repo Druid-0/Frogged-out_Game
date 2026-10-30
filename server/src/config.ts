@@ -8,11 +8,12 @@ function envNumber(name: string, fallback: number): number {
 }
 
 const root = path.resolve(__dirname, "..", "..");
+const distDir = path.join(root, "dist");
 
 export const config = {
-  port: envNumber("PORT", 8080),
+  port: envNumber("PORT", 3000),
   host: process.env.HOST ?? "0.0.0.0",
-  webDir: process.env.WEB_DIR ?? process.env.STATIC_DIR ?? path.join(root, "web"),
+  webDir: process.env.WEB_DIR ?? process.env.STATIC_DIR ?? distDir,
   godotServerBin:
     process.env.GODOT_SERVER_BIN ??
     process.env.GODOT_BIN ??

@@ -105,6 +105,35 @@ function bridgeClient(client: WebSocket, roomId: string): void {
   }
 
   room.clients.add(client);
+
+  // If no native headless Godot child exists, act as a WebSocket broadcast room relay
+  if (!room.child) {
+    client.send(
+      JSON.stringify({
+        type: "welcome",
+        roomId: room.id,
+        roomName: room.name,
+        players: room.clients.size,
+      })
+    );
+
+    client.on("message", (data: RawData, isBinary: boolean) => {
+      for (const peer of room.clients) {
+        if (peer !== client && peer.readyState === WebSocket.OPEN) {
+          peer.send(data, { binary: isBinary });
+        }
+      }
+    });
+
+    const cleanup = () => {
+      room.clients.delete(client);
+      room.lastEmptyAt = Date.now();
+    };
+    client.on("close", cleanup);
+    client.on("error", cleanup);
+    return;
+  }
+
   const queue: QueuedMessage[] = [];
   let closed = false;
 
@@ -182,9 +211,7 @@ server.on("upgrade", (req, socket, head) => {
   const match = /^\/ws\/room\/([a-zA-Z0-9_-]+)$/.exec(url.pathname);
   const roomId = match ? match[1] : url.searchParams.get("room") ?? "";
   if (!roomId || !roomManager.getRoom(roomId)) {
-    socket.write("HTTP/1.1 404 Not Found
-
-");
+    socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
     socket.destroy();
     return;
   }

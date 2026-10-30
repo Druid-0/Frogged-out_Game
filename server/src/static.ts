@@ -19,6 +19,11 @@ const MIME: Record<string, string> = {
   ".ico": "image/x-icon",
   ".map": "application/json; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
+  ".obj": "text/plain; charset=utf-8",
+  ".mtl": "text/plain; charset=utf-8",
+  ".mp3": "audio/mpeg",
+  ".ogg": "audio/ogg",
+  ".wav": "audio/wav",
 };
 
 function applyIsolationHeaders(headers: Record<string, string>): void {
@@ -30,8 +35,27 @@ function applyIsolationHeaders(headers: Record<string, string>): void {
 }
 
 export function serveStatic(_req: IncomingMessage, res: ServerResponse, urlPath: string): void {
-  const safePath = path.normalize(urlPath).replace(/^(\.\.[\/\])+/, "");
+  let decodedPath = urlPath;
+  try {
+    decodedPath = decodeURIComponent(urlPath);
+  } catch {
+    decodedPath = urlPath;
+  }
+  const safePath = path.normalize(decodedPath).replace(/^(\.\.[\/\])+/, "");
   let absolute = path.join(config.webDir, safePath);
+
+  if (
+    (!fs.existsSync(absolute) || fs.statSync(absolute).isDirectory()) &&
+    (safePath.startsWith("/assets/models/") ||
+      safePath.startsWith("assets/models/") ||
+      safePath.startsWith("/media/frog-sounds/") ||
+      safePath.startsWith("media/frog-sounds/"))
+  ) {
+    const godotCandidate = path.resolve(process.cwd(), "frog_arena_25d_godot4", safePath.replace(/^\/+/, ""));
+    if (fs.existsSync(godotCandidate) && fs.statSync(godotCandidate).isFile()) {
+      absolute = godotCandidate;
+    }
+  }
 
   if (!fs.existsSync(absolute) || fs.statSync(absolute).isDirectory()) {
     absolute = path.join(config.webDir, "index.html");

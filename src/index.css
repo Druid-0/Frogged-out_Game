@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #112414;
+  touch-action: none;
+  font-family: "Trebuchet MS", "Rubik", "Nunito", "Comic Sans MS", system-ui, -apple-system, sans-serif;
+  color: #ecfccb;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.stroke-text {
+  paint-order: stroke fill;
+  -webkit-text-stroke: 3.5px #1b1207;
+  text-shadow: 0 3px 0 #1b1207, 0 5px 10px rgba(0, 0, 0, 0.7);
+}
+
+.stroke-wood {
+  paint-order: stroke fill;
+  -webkit-text-stroke: 4px #2a1809;
+  text-shadow: 0 4px 0 #1f1105, 0 6px 14px rgba(0, 0, 0, 0.75);
+}
+
+/* Живая кнопка .round-btn 60% с древесно-болотными неровностями */
+.round-btn {
+  border-radius: 60% 42% 58% 44% / 45% 60% 42% 56%;
+  border: 3.5px solid #2b180a;
+  box-shadow:
+    0 6px 0 #1e1005,
+    0 10px 18px rgba(0, 0, 0, 0.52),
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s ease, filter 0.14s ease, border-radius 0.22s ease;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.round-btn:hover {
+  transform: translateY(-3px) rotate(-1.2deg) scale(1.03);
+  border-radius: 46% 60% 44% 58% / 58% 44% 60% 42%;
+  box-shadow:
+    0 9px 0 #1e1005,
+    0 14px 22px rgba(0, 0, 0, 0.58),
+    inset 0 2px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+  filter: brightness(1.07);
+}
+
+.round-btn:active {
+  transform: translateY(4px) rotate(0.6deg) scale(0.98);
+  box-shadow:
+    0 2px 0 #1e1005,
+    0 4px 8px rgba(0, 0, 0, 0.45),
+    inset 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.round-btn-moss {
+  background: repeating-linear-gradient(
+    -8deg,
+    #4d8c2b 0px,
+    #4d8c2b 9px,
+    #3f7722 9px,
+    #3f7722 18px
+  );
+  border-color: #233d11;
+  color: #f7fee7;
+}
+
+.round-btn-bark {
+  background: repeating-linear-gradient(
+    6deg,
+    #69411e 0px,
+    #69411e 10px,
+    #563416 10px,
+    #563416 20px
+  );
+  border-color: #2b180a;
+  color: #fef3c7;
+}
+
+.round-btn-danger {
+  background: repeating-linear-gradient(
+    -5deg,
+    #7f291d 0px,
+    #7f291d 9px,
+    #661e14 9px,
+    #661e14 18px
+  );
+  border-color: #310e09;
+  color: #ffe4e6;
+}
+
+/* Древесные доски и панели с неровными живыми краями и двойными цветами */
+.wood-panel {
+  border-radius: 28px 16px 32px 18px / 18px 30px 16px 28px;
+  background: repeating-linear-gradient(
+    2deg,
+    #3c2412 0px,
+    #3c2412 14px,
+    #331e0e 14px,
+    #331e0e 28px,
+    #432915 28px,
+    #432915 42px
+  );
+  border: 4px solid #221308;
+  box-shadow:
+    0 10px 0 #170c04,
+    0 18px 32px rgba(0, 0, 0, 0.65),
+    inset 0 2px 0 rgba(253, 230, 138, 0.18),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.4);
+}
+
+.moss-panel {
+  border-radius: 24px 32px 18px 28px / 28px 16px 30px 20px;
+  background: repeating-linear-gradient(
+    -3deg,
+    #1b3519 0px,
+    #1b3519 12px,
+    #162c14 12px,
+    #162c14 24px
+  );
+  border: 3.5px solid #2e5323;
+  box-shadow:
+    0 7px 0 #0e1e0c,
+    0 12px 22px rgba(0, 0, 0, 0.55),
+    inset 0 2px 0 rgba(190, 242, 100, 0.22);
+}
+
+.wood-plank {
+  border-radius: 22px 12px 26px 14px / 14px 24px 12px 22px;
+  background: repeating-linear-gradient(
+    4deg,
+    #523218 0px,
+    #523218 11px,
+    #462a13 11px,
+    #462a13 22px
+  );
+  border: 3px solid #271509;
+  box-shadow:
+    0 5px 0 #190d05,
+    inset 0 2px 0 rgba(254, 240, 138, 0.2);
+}
+
+.uneven-card {
+  border-radius: 22px 14px 24px 16px / 15px 25px 14px 22px;
+  border: 2.5px solid #355e27;
+  background: repeating-linear-gradient(
+    -2deg,
+    #1d381a 0px,
+    #1d381a 14px,
+    #172d14 14px,
+    #172d14 28px
+  );
+  box-shadow:
+    0 5px 0 #0d1b0b,
+    inset 0 1px 0 rgba(190, 242, 100, 0.18);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.uneven-card:hover {
+  transform: translateY(-2px) rotate(-0.4deg);
+  border-color: #84cc16;
+}
+
+.uneven-input {
+  border-radius: 20px 12px 22px 14px / 14px 22px 12px 20px;
+  border: 3px solid #2b180a;
+  background-color: #132511;
+  color: #ecfccb;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.55);
+}
+
+.uneven-input:focus {
+  outline: none;
+  border-color: #84cc16;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.55), 0 0 0 3px rgba(132, 204, 22, 0.28);
+}
+
+/* Монотонный болотный фон без градиента в единой стилистике */
+.swamp-wood-bg {
+  background-color: #162e14;
+}

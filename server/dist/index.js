@@ -164,7 +164,8 @@ server.on("upgrade", (req, socket, head) => {
     const match = /^\/ws\/room\/([a-zA-Z0-9_-]+)$/.exec(url.pathname);
     const roomId = match ? match[1] : url.searchParams.get("room") ?? "";
     if (!roomId || !roomManager.getRoom(roomId)) {
-        socket.write("HTTP/1.1 404 Not Found, ");, socket.destroy());
+        socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+        socket.destroy();
         return;
     }
     wss.handleUpgrade(req, socket, head, (ws) => {

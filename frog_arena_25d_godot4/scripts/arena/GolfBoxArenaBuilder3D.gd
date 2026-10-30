@@ -1,37 +1,39 @@
 class_name GolfBoxArenaBuilder3D
 extends Node3D
-## Процедурный генератор 3D-арены в виде коробки с живым гольф-полем и 4 динамическими кувшинками.
+## Процедурный генератор круглой 3D-арены «Болото» с неровными кочками, водой,
+## кувшинками и высокими дряхлыми деревьями по кругу вместо стен.
 
-const GRID_TILES_PER_SIDE: int = 8
-const TILE_SIZE_METERS: float = 2.6
-const FLOOR_THICKNESS: float = 0.1
-const WALL_HEIGHT: float = 1
-const WALL_THICKNESS: float = 0.8
-const INVISIBLE_WALL: float = 10
+const ARENA_RADIUS: float = 10.6
+const DECREPIT_TREE_RING_RADIUS: float = 10.95
+const DECREPIT_TREE_COUNT: int = 28
+const INVISIBLE_WALL_HEIGHT: float = 16.0
+const WATER_LEVEL_Y: float = -0.14
 
-const COLOR_TILE_LIGHT_YELLOW_GREEN := Color(0.66, 0.86, 0.26)
-const COLOR_TILE_DARK_GOLF_GREEN := Color(0.28, 0.62, 0.22)
-const COLOR_TILE_BORDER_ACCENT := Color(0.84, 0.88, 0.32)
-const COLOR_WALL_MAIN := Color(0.82, 0.44, 0.24)
-const COLOR_WALL_TOP_TRIM := Color(0.95, 0.78, 0.32)
-const COLOR_CORNER_PILLAR := Color(0.22, 0.48, 0.36)
+const COLOR_SWAMP_MOSS := Color(0.24, 0.46, 0.20)
+const COLOR_SWAMP_HUMMOCK := Color(0.32, 0.56, 0.24)
+const COLOR_SWAMP_MUD := Color(0.20, 0.16, 0.11)
+const COLOR_SWAMP_WATER := Color(0.11, 0.34, 0.25, 0.78)
+const COLOR_DECREPIT_BARK := Color(0.22, 0.15, 0.10)
+const COLOR_HANGING_MOSS := Color(0.30, 0.49, 0.24)
 
 const LILY_PAD_POSITIONS: Array[Vector3] = [
-	Vector3(-4.2, 0.02, -4.2),
-	Vector3(4.2, 0.02, -4.2),
-	Vector3(-4.2, 0.02, 4.2),
-	Vector3(4.2, 0.02, 4.2),
+	Vector3(-4.4, -0.08, -4.4),
+	Vector3(4.4, -0.08, -4.4),
+	Vector3(-4.4, -0.08, 4.4),
+	Vector3(4.4, -0.08, 4.4),
+	Vector3(0.0, -0.08, -5.4),
+	Vector3(0.0, -0.08, 5.4),
 ]
 
 
 func _ready() -> void:
-	_build_golf_checkerboard_floor()
-	_build_colored_box_walls()
+	_build_circular_swamp_floor()
+	_build_circular_decrepit_trees_perimeter()
 	_build_sinking_lily_pads()
 
 
 func get_inner_half_extent() -> float:
-	return (float(GRID_TILES_PER_SIDE) * TILE_SIZE_METERS) * 0.5
+	return ARENA_RADIUS
 
 
 func _build_sinking_lily_pads() -> void:
@@ -46,141 +48,147 @@ func _build_sinking_lily_pads() -> void:
 		pads_root.add_child(pad)
 
 
-func _build_golf_checkerboard_floor() -> void:
-	var arena_span: float = float(GRID_TILES_PER_SIDE) * TILE_SIZE_METERS
-	var half_span: float = arena_span * 0.5
-
+func _build_circular_swamp_floor() -> void:
 	var floor_body := StaticBody3D.new()
-	floor_body.name = "GolfFloorStaticBody"
+	floor_body.name = "SwampCircularFloorBody"
 	floor_body.collision_layer = 1
 	floor_body.collision_mask = 0
 
 	var floor_col := CollisionShape3D.new()
-	var floor_shape := BoxShape3D.new()
-	floor_shape.size = Vector3(arena_span + WALL_THICKNESS * 2.0, FLOOR_THICKNESS, arena_span + WALL_THICKNESS * 2.0)
-	floor_col.shape = floor_shape
-	floor_col.position = Vector3(0.0, -FLOOR_THICKNESS * 0.5, 0.0)
+	var floor_cyl := CylinderShape3D.new()
+	floor_cyl.radius = ARENA_RADIUS + 1.2
+	floor_cyl.height = 0.24
+	floor_col.shape = floor_cyl
+	floor_col.position = Vector3(0.0, -0.12, 0.0)
 	floor_body.add_child(floor_col)
 	add_child(floor_body)
 
-	var mat_light := StandardMaterial3D.new()
-	mat_light.albedo_color = COLOR_TILE_LIGHT_YELLOW_GREEN
-	mat_light.roughness = 0.85
+	var mat_moss := StandardMaterial3D.new()
+	mat_moss.albedo_color = COLOR_SWAMP_MOSS
+	mat_moss.roughness = 0.92
 
-	var mat_dark := StandardMaterial3D.new()
-	mat_dark.albedo_color = COLOR_TILE_DARK_GOLF_GREEN
-	mat_dark.roughness = 0.88
+	var mat_hummock := StandardMaterial3D.new()
+	mat_hummock.albedo_color = COLOR_SWAMP_HUMMOCK
+	mat_hummock.roughness = 0.88
 
-	var mat_border := StandardMaterial3D.new()
-	mat_border.albedo_color = COLOR_TILE_BORDER_ACCENT
-	mat_border.roughness = 0.80
+	var mat_water := StandardMaterial3D.new()
+	mat_water.albedo_color = COLOR_SWAMP_WATER
+	mat_water.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_water.roughness = 0.20
 
-	var tiles_root := Node3D.new()
-	tiles_root.name = "CheckerboardGolfTiles"
-	add_child(tiles_root)
+	var swamp_root := Node3D.new()
+	swamp_root.name = "CircularSwampTerrain"
+	add_child(swamp_root)
 
-	var tile_mesh := BoxMesh.new()
-	tile_mesh.size = Vector3(TILE_SIZE_METERS * 0.985, 0.08, TILE_SIZE_METERS * 0.985)
+	# Основной круглый остров болота
+	var main_disc := MeshInstance3D.new()
+	var disc_mesh := CylinderMesh.new()
+	disc_mesh.top_radius = ARENA_RADIUS + 0.9
+	disc_mesh.bottom_radius = ARENA_RADIUS + 1.4
+	disc_mesh.height = 0.22
+	disc_mesh.radial_segments = 48
+	main_disc.mesh = disc_mesh
+	main_disc.position = Vector3(0.0, -0.14, 0.0)
+	main_disc.material_override = mat_moss
+	swamp_root.add_child(main_disc)
 
-	for row: int in range(GRID_TILES_PER_SIDE):
-		for col: int in range(GRID_TILES_PER_SIDE):
-			var tile_instance := MeshInstance3D.new()
-			tile_instance.mesh = tile_mesh
+	# Полупрозрачная болотная вода
+	var water_inst := MeshInstance3D.new()
+	var water_cyl := CylinderMesh.new()
+	water_cyl.top_radius = ARENA_RADIUS + 2.4
+	water_cyl.bottom_radius = ARENA_RADIUS + 2.4
+	water_cyl.height = 0.04
+	water_inst.mesh = water_cyl
+	water_inst.position = Vector3(0.0, WATER_LEVEL_Y, 0.0)
+	water_inst.material_override = mat_water
+	swamp_root.add_child(water_inst)
 
-			var pos_x: float = -half_span + (float(col) + 0.5) * TILE_SIZE_METERS
-			var pos_z: float = -half_span + (float(row) + 0.5) * TILE_SIZE_METERS
-			tile_instance.position = Vector3(pos_x, -0.04, pos_z)
-
-			var is_even: bool = ((row + col) % 2) == 0
-			tile_instance.material_override = mat_light if is_even else mat_dark
-			tiles_root.add_child(tile_instance)
-
-	var base_mesh_inst := MeshInstance3D.new()
-	var base_box := BoxMesh.new()
-	base_box.size = Vector3(arena_span + 0.2, FLOOR_THICKNESS, arena_span + 0.2)
-	base_mesh_inst.mesh = base_box
-	base_mesh_inst.position = Vector3(0.0, -FLOOR_THICKNESS * 0.5 - 0.02, 0.0)
-	base_mesh_inst.material_override = mat_border
-	tiles_root.add_child(base_mesh_inst)
+	# Неровные болотные кочки внутри круга
+	for i: int in range(18):
+		var ang: float = (float(i) / 18.0) * TAU
+		var rad: float = 2.6 + float(i % 3) * 2.3
+		var hummock := MeshInstance3D.new()
+		var h_mesh := CylinderMesh.new()
+		h_mesh.top_radius = 1.15
+		h_mesh.bottom_radius = 1.55
+		h_mesh.height = 0.28 + float(i % 2) * 0.14
+		hummock.mesh = h_mesh
+		hummock.position = Vector3(cos(ang) * rad, 0.04, sin(ang) * rad)
+		hummock.material_override = mat_hummock
+		swamp_root.add_child(hummock)
 
 
-func _build_colored_box_walls() -> void:
-	var arena_span: float = float(GRID_TILES_PER_SIDE) * TILE_SIZE_METERS
-	var half_span: float = arena_span * 0.5
-	var wall_offset: float = half_span + (WALL_THICKNESS * 0.5)
-	var full_wall_len: float = arena_span + (WALL_THICKNESS * 2.0)
+func _build_circular_decrepit_trees_perimeter() -> void:
+	var bark_mat := StandardMaterial3D.new()
+	bark_mat.albedo_color = COLOR_DECREPIT_BARK
+	bark_mat.roughness = 0.95
 
-	var wall_mat := StandardMaterial3D.new()
-	wall_mat.albedo_color = COLOR_WALL_MAIN
-	wall_mat.roughness = 0.65
+	var moss_mat := StandardMaterial3D.new()
+	moss_mat.albedo_color = COLOR_HANGING_MOSS
+	moss_mat.roughness = 0.90
 
-	var trim_mat := StandardMaterial3D.new()
-	trim_mat.albedo_color = COLOR_WALL_TOP_TRIM
-	trim_mat.roughness = 0.50
+	var perimeter_body := StaticBody3D.new()
+	perimeter_body.name = "CircularDecrepitTreePerimeter"
+	perimeter_body.collision_layer = 1
+	perimeter_body.collision_mask = 0
+	add_child(perimeter_body)
 
-	var pillar_mat := StandardMaterial3D.new()
-	pillar_mat.albedo_color = COLOR_CORNER_PILLAR
-	pillar_mat.roughness = 0.60
+	var chord_len: float = (TAU * ARENA_RADIUS) / float(DECREPIT_TREE_COUNT)
 
-	var walls_root := StaticBody3D.new()
-	walls_root.name = "BoxPerimeterWalls"
-	walls_root.collision_layer = 1
-	walls_root.collision_mask = 0
-	add_child(walls_root)
+	for i: int in range(DECREPIT_TREE_COUNT):
+		var angle: float = (float(i) / float(DECREPIT_TREE_COUNT)) * TAU
+		var tx: float = cos(angle) * DECREPIT_TREE_RING_RADIUS
+		var tz: float = sin(angle) * DECREPIT_TREE_RING_RADIUS
 
-	var wall_configs: Array[Dictionary] = [
-		{"name": "NorthWall", "pos": Vector3(0.0, WALL_HEIGHT * 0.5, -wall_offset), "size": Vector3(full_wall_len, WALL_HEIGHT, WALL_THICKNESS)},
-		{"name": "SouthWall", "pos": Vector3(0.0, WALL_HEIGHT * 0.5, wall_offset), "size": Vector3(full_wall_len, WALL_HEIGHT, WALL_THICKNESS)},
-		{"name": "EastWall", "pos": Vector3(wall_offset, WALL_HEIGHT * 0.5, 0.0), "size": Vector3(WALL_THICKNESS, WALL_HEIGHT, arena_span)},
-		{"name": "WestWall", "pos": Vector3(-wall_offset, WALL_HEIGHT * 0.5, 0.0), "size": Vector3(WALL_THICKNESS, WALL_HEIGHT, arena_span)},
-	]
-	
-	#var invsible_wall_configs: Array[Dictionary] = [
-		#{"name": "NorthWall", "pos": Vector3(0.0, INVISIBLE_WALL * 0.5, -wall_offset), "size": Vector3(full_wall_len, INVISIBLE_WALL, WALL_THICKNESS)},
-		#{"name": "SouthWall", "pos": Vector3(0.0, INVISIBLE_WALL * 0.5, wall_offset), "size": Vector3(full_wall_len, INVISIBLE_WALL, WALL_THICKNESS)},
-		#{"name": "EastWall", "pos": Vector3(wall_offset, INVISIBLE_WALL * 0.5, 0.0), "size": Vector3(INVISIBLE_WALL, INVISIBLE_WALL, arena_span)},
-		#{"name": "WestWall", "pos": Vector3(-wall_offset, INVISIBLE_WALL * 0.5, 0.0), "size": Vector3(INVISIBLE_WALL, INVISIBLE_WALL, arena_span)},
-	#]
-	
-	for cfg: Dictionary in wall_configs:
-		var w_pos: Vector3 = cfg["pos"] as Vector3
-		var w_size: Vector3 = cfg["size"] as Vector3
-
+		# Высокая невидимая коллизия по сегменту круга, предотвращающая вылет с карты
 		var col := CollisionShape3D.new()
 		var box_shape := BoxShape3D.new()
-		box_shape.size = Vector3(w_size.x, WALL_HEIGHT * 100, w_size.z)
+		box_shape.size = Vector3(0.85, INVISIBLE_WALL_HEIGHT * 2.0, chord_len * 1.15)
 		col.shape = box_shape
-		col.position = Vector3(w_pos.x, WALL_HEIGHT * 1.4, w_pos.z)
-		walls_root.add_child(col)
+		col.position = Vector3(cos(angle) * ARENA_RADIUS, INVISIBLE_WALL_HEIGHT * 0.5, sin(angle) * ARENA_RADIUS)
+		col.rotation.y = -angle
+		perimeter_body.add_child(col)
 
-		var wall_mesh_inst := MeshInstance3D.new()
-		wall_mesh_inst.name = str(cfg["name"])
-		var wall_box := BoxMesh.new()
-		wall_box.size = w_size
-		wall_mesh_inst.mesh = wall_box
-		wall_mesh_inst.position = w_pos
-		wall_mesh_inst.material_override = wall_mat
-		walls_root.add_child(wall_mesh_inst)
+		# Модели высоких дряхлых болотных деревьев вместо стен
+		var tree_root := Node3D.new()
+		tree_root.name = "DecrepitSwampTree_%d" % i
+		tree_root.position = Vector3(tx, 0.0, tz)
+		tree_root.rotation.y = -angle
+		perimeter_body.add_child(tree_root)
 
-		var trim_inst := MeshInstance3D.new()
-		var trim_box := BoxMesh.new()
-		trim_box.size = Vector3(w_size.x + 0.08, 0.24, w_size.z + 0.08)
-		trim_inst.mesh = trim_box
-		trim_inst.position = Vector3(w_pos.x, WALL_HEIGHT + 0.12, w_pos.z)
-		trim_inst.material_override = trim_mat
-		walls_root.add_child(trim_inst)
+		var is_front_arc: bool = tz > 7.8 and absf(tx) < 5.8
+		var trunk_h: float = 3.8 if is_front_arc else (6.0 + float(i % 3) * 1.2)
 
-	var corners: Array[Vector3] = [
-		Vector3(-wall_offset, 0.0, -wall_offset),
-		Vector3(wall_offset, 0.0, -wall_offset),
-		Vector3(-wall_offset, 0.0, wall_offset),
-		Vector3(wall_offset, 0.0, wall_offset),
-	]
-	for corner_pos: Vector3 in corners:
-		var pillar := MeshInstance3D.new()
-		var p_mesh := BoxMesh.new()
-		p_mesh.size = Vector3(WALL_THICKNESS * 1.35, WALL_HEIGHT + 0.55, WALL_THICKNESS * 1.35)
-		pillar.mesh = p_mesh
-		pillar.position = Vector3(corner_pos.x, (WALL_HEIGHT + 0.55) * 0.5, corner_pos.z)
-		pillar.material_override = pillar_mat
-		walls_root.add_child(pillar)
+		var trunk := MeshInstance3D.new()
+		var trunk_cyl := CylinderMesh.new()
+		trunk_cyl.top_radius = 0.22
+		trunk_cyl.bottom_radius = 0.56
+		trunk_cyl.height = trunk_h
+		trunk_cyl.radial_segments = 7
+		trunk.mesh = trunk_cyl
+		trunk.position = Vector3(0.0, trunk_h * 0.5, 0.0)
+		trunk.rotation.z = 0.08
+		trunk.material_override = bark_mat
+		tree_root.add_child(trunk)
+
+		# Корявая ветвь со свисающим болотным мхом
+		var branch := MeshInstance3D.new()
+		var b_cyl := CylinderMesh.new()
+		b_cyl.top_radius = 0.06
+		b_cyl.bottom_radius = 0.15
+		b_cyl.height = 1.8
+		branch.mesh = b_cyl
+		branch.position = Vector3(0.55, trunk_h * 0.72, 0.0)
+		branch.rotation.z = -1.1
+		branch.material_override = bark_mat
+		tree_root.add_child(branch)
+
+		var hanging_moss := MeshInstance3D.new()
+		var moss_cone := CylinderMesh.new()
+		moss_cone.top_radius = 0.20
+		moss_cone.bottom_radius = 0.02
+		moss_cone.height = 1.15
+		hanging_moss.mesh = moss_cone
+		hanging_moss.position = Vector3(0.95, trunk_h * 0.62, 0.0)
+		hanging_moss.material_override = moss_mat
+		tree_root.add_child(hanging_moss)
