@@ -1,0 +1,356 @@
+[gd_scene load_steps=12 format=3 uid="uid://main_arena_25d"]
+
+[ext_resource type="Script" path="res://scripts/MainArenaController.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/camera/OrthoCameraRig.gd" id="2_cam"]
+[ext_resource type="Script" path="res://scripts/managers/GameRulesManager.gd" id="3_rules"]
+[ext_resource type="Script" path="res://scripts/managers/NetworkLobbyManager.gd" id="4_lobby"]
+[ext_resource type="PackedScene" path="res://scenes/FrogCharacter.tscn" id="6_frog_scene"]
+[ext_resource type="Script" path="res://scripts/arena/BouncePadHazard3D.gd" id="7_bounce"]
+[ext_resource type="Script" path="res://scripts/arena/GolfBoxArenaBuilder3D.gd" id="8_golf_box"]
+[ext_resource type="Script" path="res://scripts/managers/UserSettingsManager.gd" id="9_settings"]
+[ext_resource type="Script" path="res://scripts/arena/ArenaPowerUpSpawner3D.gd" id="10_spawner"]
+[ext_resource type="Script" path="res://scripts/arena/ShrinkingZoneHazard3D.gd" id="11_zone"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_bounce"]
+height = 0.4
+radius = 1.2
+
+[node name="MainArena" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.55667, 0, 16, 0)
+shadow_enabled = true
+
+[node name="GolfBoxArena3D" type="Node3D" parent="."]
+script = ExtResource("8_golf_box")
+
+[node name="CenterBounceFlower" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+script = ExtResource("7_bounce")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CenterBounceFlower"]
+shape = SubResource("CylinderShape3D_bounce")
+
+[node name="ArenaPowerUpSpawner3D" type="Node3D" parent="."]
+script = ExtResource("10_spawner")
+
+[node name="ShrinkingZoneHazard3D" type="Node3D" parent="."]
+script = ExtResource("11_zone")
+
+[node name="PlayersContainer" type="Node3D" parent="."]
+
+[node name="OrthoCameraRig" type="Camera3D" parent="."]
+transform = Transform3D(0.707107, -0.473147, 0.525483, 0, 0.743145, 0.669131, -0.707107, -0.473147, 0.525483, 19.968, 25.427, 19.968)
+projection = 1
+current = true
+size = 17.5
+near = 0.1
+far = 200.0
+script = ExtResource("2_cam")
+
+[node name="GameRulesManager" type="Node" parent="."]
+script = ExtResource("3_rules")
+
+[node name="UserSettingsManager" type="Node" parent="."]
+script = ExtResource("9_settings")
+
+[node name="NetworkLobbyManager" type="Node" parent="."]
+script = ExtResource("4_lobby")
+frog_scene = ExtResource("6_frog_scene")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MenuBackdrop" type="ColorRect" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.16, 0.11, 0.72)
+
+[node name="TitleScreenPanel" type="PanelContainer" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -195.0
+offset_right = 240.0
+offset_bottom = 195.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/HUD/TitleScreenPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="UI/HUD/TitleScreenPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="GameTitleLabel" type="Label" parent="UI/HUD/TitleScreenPanel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "FROG ARENA 2.5D - GOLF BOX"
+
+[node name="SubtitleLabel" type="Label" parent="UI/HUD/TitleScreenPanel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Раздави соперников в 3D-коробке!"
+
+[node name="NicknameInput" type="LineEdit" parent="UI/HUD/TitleScreenPanel/Margin/VBox"]
+layout_mode = 2
+placeholder_text = "Введите никнейм вашей лягушки..."
+text = "Квакер"
+
+[node name="OpenPlayMenuButton" type="Button" parent="UI/HUD/TitleScreenPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "ИГРАТЬ"
+
+[node name="OpenSettingsButton" type="Button" parent="UI/HUD/TitleScreenPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "НАСТРОЙКИ"
+
+[node name="QuitGameButton" type="Button" parent="UI/HUD/TitleScreenPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "ВЫЙТИ ИЗ ИГРЫ"
+
+[node name="PlayMenuPanel" type="PanelContainer" parent="UI/HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -290.0
+offset_top = -220.0
+offset_right = 290.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/HUD/PlayMenuPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="UI/HUD/PlayMenuPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="PlayHeaderLabel" type="Label" parent="UI/HUD/PlayMenuPanel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "ИГРАТЬ — ОНЛАЙН И ЛОКАЛЬНЫЕ КОМНАТЫ"
+
+[node name="AddressGrid" type="GridContainer" parent="UI/HUD/PlayMenuPanel/Margin/VBox"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 8
+
+[node name="IpLabel" type="Label" parent="UI/HUD/PlayMenuPanel/Margin/VBox/AddressGrid"]
+layout_mode = 2
+text = "Код комнаты или IP:"
+
+[node name="IpInput" type="LineEdit" parent="UI/HUD/PlayMenuPanel/Margin/VBox/AddressGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "например, a1b2c3 или 127.0.0.1"
+text = "127.0.0.1"
+
+[node name="PortLabel" type="Label" parent="UI/HUD/PlayMenuPanel/Margin/VBox/AddressGrid"]
+layout_mode = 2
+text = "Порт (для локального сервера):"
+
+[node name="PortInput" type="LineEdit" parent="UI/HUD/PlayMenuPanel/Margin/VBox/AddressGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "7777"
+text = "7777"
+
+[node name="ActionsRow" type="HBoxContainer" parent="UI/HUD/PlayMenuPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CreateLobbyButton" type="Button" parent="UI/HUD/PlayMenuPanel/Margin/VBox/ActionsRow"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "СОЗДАТЬ ЛОББИ"
+
+[node name="JoinLobbyButton" type="Button" parent="UI/HUD/PlayMenuPanel/Margin/VBox/ActionsRow"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ПРИСОЕДИНИТЬСЯ К ИГРЕ"
+
+[node name="LanRoomsHeader" type="Label" parent="UI/HUD/PlayMenuPanel/Margin/VBox"]
+layout_mode = 2
+text = "Открытые комнаты на сервере:"
+
+[node name="ServerListVBox" type="VBoxContainer" parent="UI/HUD/PlayMenuPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BackFromPlayButton" type="Button" parent="UI/HUD/PlayMenuPanel/Margin/VBox"]
+layout_mode = 2
+text = "НАЗАД В ГЛАВНОЕ МЕНЮ"
+
+[node name="SettingsPanel" type="PanelContainer" parent="UI/HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -195.0
+offset_right = 260.0
+offset_bottom = 195.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/HUD/SettingsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="UI/HUD/SettingsPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SettingsHeaderLabel" type="Label" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "НАСТРОЙКИ ИГРЫ"
+
+[node name="SfxVolumeLabel" type="Label" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+layout_mode = 2
+text = "Громкость звуков (Master / SFX):"
+
+[node name="SfxVolumeSlider" type="HSlider" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 85.0
+
+[node name="MusicVolumeLabel" type="Label" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+layout_mode = 2
+text = "Громкость музыки (задел под саундтрек):"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+value = 70.0
+
+[node name="ControlModeLabel" type="Label" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+layout_mode = 2
+text = "Режим прыжка (по умолчанию Рогатка):"
+
+[node name="ControlModeOption" type="OptionButton" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="BackFromSettingsButton" type="Button" parent="UI/HUD/SettingsPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "СОХРАНИТЬ И ВЫЙТИ В МЕНЮ"
+
+[node name="WaitingRoomHUD" type="Control" parent="UI/HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SettingsBox" type="PanelContainer" parent="UI/HUD/WaitingRoomHUD"]
+layout_mode = 1
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 370.0
+offset_bottom = 280.0
+
+[node name="SettingsSummaryLabel" type="Label" parent="UI/HUD/WaitingRoomHUD/SettingsBox"]
+layout_mode = 2
+text = "ЛОББИ ОЖИДАНИЯ"
+
+[node name="BottomBar" type="HBoxContainer" parent="UI/HUD/WaitingRoomHUD"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -72.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 12
+
+[node name="PlayerCounterLabel" type="Label" parent="UI/HUD/WaitingRoomHUD/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ожидание игроков: 1 / 8"
+
+[node name="ColorCycleButton" type="Button" parent="UI/HUD/WaitingRoomHUD/BottomBar"]
+layout_mode = 2
+text = "Сменить цвет"
+
+[node name="TeamToggleButton" type="Button" parent="UI/HUD/WaitingRoomHUD/BottomBar"]
+layout_mode = 2
+text = "Режим: Каждый за себя"
+
+[node name="AddBotButton" type="Button" parent="UI/HUD/WaitingRoomHUD/BottomBar"]
+layout_mode = 2
+text = "+ Добавить бота"
+
+[node name="StartMatchButton" type="Button" parent="UI/HUD/WaitingRoomHUD/BottomBar"]
+layout_mode = 2
+text = "НАЧАТЬ ИГРУ (START)"
+
+[node name="LeaveLobbyButton" type="Button" parent="UI/HUD/WaitingRoomHUD/BottomBar"]
+layout_mode = 2
+text = "Покинуть лобби"
+
+[node name="CenterBannerLabel" type="Label" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -380.0
+offset_top = 22.0
+offset_right = 380.0
+offset_bottom = 66.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = ""

@@ -1,0 +1,41 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Frog Arena 2.5D (Godot 4.7)"
+config/description="Мобильная и браузерная 2.5D мультиплеерная игра про лягушек в коробке с гольф-полем, бонусами, динамическими ловушками и ортогональной камерой"
+run/main_scene="res://scenes/MainArena.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[layer_names]
+
+3d_physics/layer_1="ArenaEnvironment"
+3d_physics/layer_2="FrogBodies"
+3d_physics/layer_3="FrogHurtboxes"
+3d_physics/layer_4="FrogStompHitboxes"
+3d_physics/layer_5="ArenaHazards"
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
